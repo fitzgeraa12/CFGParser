@@ -2,19 +2,19 @@ return {
     parse_args = function(...): (string, string)
         local args = table.pack(...);
 
-        -- Trims any leading/trailing single quotes from the given string
+        -- Attempt to trim a leading and trailing single quote from the given string
         local function trim_single_quotes(str: string)
             if str == nil or str == "" then
                 return str;
             end
     
-            -- Remove leading single quotes
-            while #str > 0 and (string.sub(str, 1, 1) == "'") do
+            -- Remove leading single quote?
+            if #str > 0 and string.sub(str, 1, 1) == "'" then
                 str = str:sub(2, #str); -- Remove the first character
             end
     
-            -- Remove trailing single quotes
-            while #str > 0 and (string.sub(str, #str, #str) == "'") do
+            -- Remove trailing single quote?
+            if #str > 0 and string.sub(str, #str, #str) == "'" then
                 str = str:sub(1, #str - 1); -- Remove the last character
             end
     

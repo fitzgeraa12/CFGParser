@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
     // Run code
     Cmd build_cmd = {0};
-    cmd_append(&build_cmd, luau_interpreter, "cfg_parser.luau", "--program-args");
+    cmd_append(&build_cmd, luau_interpreter, "cfg_parser.luau", "-a");
     for (int i = 0; i < argc; i++) {
         const char* file_path = argv[i];
 
