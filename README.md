@@ -1,3 +1,9 @@
+# Things to note
+* This project is primarily written in Luau, although the code is executed indirectly through the proxy *nob.c*.
+* *nob.c* forwards the file contents as arguments to the actual source code, because Luau has no file system support.
+* *nob.c* utilizes a utility header, *nob.h*, which makes this process simpler.
+* **None of the source code dedicated to the grammar parser itself uses any external utilities, only the build/run script (*nob.c*) does (only *nob.h*).**
+
 # How to run
 
 **<span style="color:orange">

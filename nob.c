@@ -25,20 +25,20 @@ int main(int argc, char** argv) {
 #elif linux
     luau_interpreter = "./bin/luau-linux";
 #else
-    nob_log(NOB_ERROR, "Unsupported operating system");
+    nob_log(ERROR, "Unsupported operating system");
     return 1;
 #endif
 
     // Run code
     Cmd build_cmd = {0};
-    nob_cmd_append(&build_cmd, luau_interpreter, "cfg_parser.luau", "--program-args");
+    cmd_append(&build_cmd, luau_interpreter, "cfg_parser.luau", "--program-args");
     for (int i = 0; i < argc; i++) {
         const char* file_path = argv[i];
 
         String_Builder file_contents = {0};
 
         if (!read_entire_file(file_path, &file_contents)) {
-            nob_log(NOB_ERROR, "Failed to read file: %s", file_path);
+            nob_log(ERROR, "Failed to read file: %s", file_path);
             return 1;
         }
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         }
         file_contents.items[file_contents.count] = '\0'; // Early string termination
 
-        nob_cmd_append(&build_cmd, nob_temp_sprintf("\"%s\"", file_contents.items));
+        cmd_append(&build_cmd, temp_sprintf("\"%s\"", file_contents.items));
         sb_free(file_contents);
     }
     cmd_run_sync(build_cmd);
