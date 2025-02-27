@@ -18,7 +18,7 @@ gcc nob.c -o nob-windows.exe
 
 How we run the program on our end (Windows):
 ```
-./nob-windows.exe "astarGrammar.txt" "astarGrammarInput.txt"
+nob-windows.exe "astarGrammar.txt" "astarGrammarInput.txt"
 ```
 
 <span style="color:lightblue">
