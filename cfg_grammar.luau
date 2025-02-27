@@ -42,6 +42,7 @@ local function grammar_rule_exists(grammar: Grammar, term: string, expansion_ter
     if not rule then return false; end
 
     for _, expansion_option in rule do
+        if #expansion_option ~= 1 then continue; end
         if table.find(expansion_option, expansion_term) then return true; end
     end
 
@@ -109,29 +110,57 @@ return {
     ]]
     string_exists_in = function(w: string, grammar: Grammar): (boolean)
         local n = #w;
-        if n < 1 then return false; end -- Actual empty string is like the empty set
-        
-        if w == "e" and grammar_rule_exists(grammar, grammar.start, "e") then return true; end -- Empty string "e"
-
-        local tab = table.create(n, table.create(n));
+        if (n < 1 or w == "e") and grammar_rule_exists(grammar, grammar.start, "e") then return true; end -- S -> e rule?
+    
+        -- Initialize table
+        local tab: {{{string}}} = {};
         for i = 1, n do
-            local char = string.sub(w, i);
+            tab[i] = {};
+            for j = 1, n do
+                tab[i][j] = {};
+            end
+        end
+    
+        -- Iterate through characters
+        for i = 1, n do
+            local char = string.sub(w, i, i); -- 'w_i'
+            -- For each 'A'
             for _, var in grammar.vars do
-                if grammar_rule_exists(grammar, var, char) then
-                    tab[i][i] = var;
+                local rule = grammar.rules[var];
+                if not rule then continue; end
+
+                for _, expansion in rule do
+                    if #expansion == 1 and expansion[1] == char then -- Expands to the given char?
+                        table.insert(tab[i][i], var); -- Add 'A' to tab[i][i]
+                    end
                 end
             end
         end
-
+    
         for l = 2, n do
-            for i = l, n - l + 1 do
+            for i = 1, n - l + 1 do
                 local j = i + l - 1;
                 for k = i, j - 1 do
-                    -- TODO: 'A -> BC' rule?
+                    -- For each 'A'
+                    for _, var in grammar.vars do
+                        local rule = grammar.rules[var];
+                        if not rule then continue; end
+
+                        for _, expansion in rule do
+                            if #expansion == 2 then -- A -> BC rule
+                                local b, c = expansion[1], expansion[2];
+                                
+                                -- Look for B in table(i, k) and C in table(k + 1, j)
+                                if table.find(tab[i][k], b) and table.find(tab[k + 1][j], c) then
+                                    table.insert(tab[i][j], var); -- Add 'A' to tab[i][j]
+                                end
+                            end
+                        end
+                    end
                 end
             end
         end
-
-        return false;
+    
+        return table.find(tab[1][n], grammar.start) ~= nil; -- 'S' in table(1, n)?
     end
 };
