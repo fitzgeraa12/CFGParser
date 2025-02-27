@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
 
         String_Builder file_contents = {0};
 
+        // Get file contents
         if (!read_entire_file(file_path, &file_contents)) {
             nob_log(ERROR, "Failed to read file: %s", file_path);
             return 1;
@@ -48,6 +49,7 @@ int main(int argc, char** argv) {
         }
         file_contents.items[file_contents.count] = '\0'; // Early string termination
 
+        // Append file contents as program argument
         cmd_append(&build_cmd, temp_sprintf("\"%s\"", file_contents.items));
         sb_free(file_contents);
     }
