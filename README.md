@@ -20,10 +20,17 @@ main-windows.exe astarGrammar.txt astarGrammarInput.txt
 ```
 
 <span style="color:lightblue">
-    We included the Luau interpreters for Windows, MacOS, and Linux, so the execution of the Luau code should be taken care of automatically (hopefully). 
+    We included the Luau interpreters for Windows, MacOS, and Linux, so the execution of the Luau code should be taken care of automatically (hopefully).
 </span>
 
-**<span style="color:orange">
+* **<span style="color:orange">
+    Note: 
+</span>**
+<span style="color:orange">
+    Because main.c utilizes one of the luau executables inside 'bin' to run the luau code, it's possible that express permissions need to be given to that executable (e.g. 'luau-linux') in order for the code to run.
+</span>
+
+* **<span style="color:orange">
     Worst case scenario: 
 </span>**
 <span style="color:orange">
