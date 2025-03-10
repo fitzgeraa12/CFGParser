@@ -3,15 +3,18 @@
 #include "string.h"
 #include "dyn_string.h" // This is not an 3rd-party lib
 
+// Quick exit program
 void panic(const char* panic_msg) {
     fprintf(stderr, "%s\n", panic_msg);
     exit(1);
 }
 
+// Formatted logging
 void log_msg(const char* msg) {
     printf("[CFG_PARSER MAIN] %s\n", msg);
 }
 
+// Shifts args over and returns the popped arg
 char* shift_args(int* argc, char*** argv) {
     if (*argc <= 0) return NULL;
     
@@ -26,14 +29,16 @@ char* shift_args(int* argc, char*** argv) {
 // https://www.w3schools.com/c/c_files_read.php
 // https://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
 dyn_string* read_file_contents(const char* file_path) {
+    // Open file
     FILE* f = fopen(file_path, "r");
     if (!f) return NULL;
 
+    // Read file contents into string
     dyn_string* file_contents = dyn_string_create("");
     char c;
     while ((c = fgetc(f)) != EOF) {
         if (c == '\n') {
-            dyn_string_append(file_contents, "\\n");
+            dyn_string_append(file_contents, "\\n"); // Insert escaped newline so the command behaves as intended
         } else {
             // https://stackoverflow.com/questions/22621952/convert-char-to-string-in-c
             char char_str[2] = "\0";
@@ -54,7 +59,6 @@ int main(int argc, char** argv) {
     char* last_bslash = strrchr(exe_path, '\\');
     *(++last_bslash) = '\0'; // Early termination
     const char* working_dir = exe_path;
-    log_msg(working_dir);
 
 #ifdef _WIN32
     const char* luau_interpreter = "bin\\luau-windows.exe";
@@ -83,32 +87,26 @@ int main(int argc, char** argv) {
 #endif
 
     // Run code
-    dyn_string* build_cmd = dyn_string_create(working_dir);
-    if (!build_cmd) {
-        panic("Failed to allocate memory for build_cmd.");
-    }
+    dyn_string* run_cmd = dyn_string_create(working_dir);
+    if (!run_cmd) panic("Failed to allocate memory for run_cmd.");
 
-    dyn_string_append(build_cmd, luau_interpreter);
-    dyn_string_append(build_cmd, " ");
-    dyn_string_append(build_cmd, working_dir);
-    dyn_string_append(build_cmd, "cfg_parser.luau");
-    dyn_string_append(build_cmd, " ");
-    dyn_string_append(build_cmd, "-a");
+    dyn_string_append(run_cmd, luau_interpreter);
+    dyn_string_append(run_cmd, " ");
+    dyn_string_append(run_cmd, working_dir);
+    dyn_string_append(run_cmd, "cfg_parser.luau");
+    dyn_string_append(run_cmd, " ");
+    dyn_string_append(run_cmd, "-a");
+
+    // Appends file contents as args to luau code (Luau has very limited I/O)
     for (int i = 0; i < argc; i++) {
         const char* file_path = argv[i];
 
         // Get file contents
         dyn_string* file_contents = read_file_contents(file_path);
         if (!file_contents) {
-            dyn_string_free(build_cmd);
+            dyn_string_free(run_cmd);
             panic("Failed to read file contents.");
         }
-        
-        // // Trim trailing whitespace
-        // while (file_contents->len > 0 && file_contents->raw[file_contents->len - 1] == ' ') {
-        //     file_contents->len--;
-        // }
-        // file_contents->raw[file_contents->len] = '\0'; // Early string termination
 
         // Append file contents as program argument
         dyn_string* wrapped_arg = dyn_string_create("\"");
@@ -116,18 +114,18 @@ int main(int argc, char** argv) {
 
         dyn_string_append(wrapped_arg, file_contents->raw);
         dyn_string_append(wrapped_arg, "\"");
-        dyn_string_append(build_cmd, " ");
-        dyn_string_append(build_cmd, wrapped_arg->raw);
+        dyn_string_append(run_cmd, " ");
+        dyn_string_append(run_cmd, wrapped_arg->raw);
 
         dyn_string_free(file_contents);
         dyn_string_free(wrapped_arg);
     }
 
     log_msg("Running cfg parser...");
-    if (system(build_cmd->raw) != 0) panic("Failed to run build command."); // Run build command
+    if (system(run_cmd->raw) != 0) panic("Failed to run build command."); // Run luau code
 
     printf("\n");
     log_msg("Done.");
-    dyn_string_free(build_cmd);    
+    dyn_string_free(run_cmd);    
     return 0;
 }
