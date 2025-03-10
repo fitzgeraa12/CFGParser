@@ -7,19 +7,13 @@
 local function clean_string(str: string): (string)
     if str == "" then return str; end
 
-    str = string.gsub(str, "%s+$", "") -- Trim trailing white space (https://www.lua.org/manual/5.4/manual.html#6.4.1)
-    str = string.gsub(str, "\\n", "\n")
-    str = string.gsub(str, "\r", ""); -- Remove carriage returns (these were apparently making the output look insane)
-
-    -- Remove leading single quote?
-    if #str > 0 and string.sub(str, 1, 1) == "'" then
-        str = str:sub(2, #str); -- Remove the first character
+    -- Funny edge case with newline at the end
+    if string.sub(str, #str - 1, #str) == "\\n" then
+        str = string.sub(str, 1, #str - 2);
     end
 
-    -- Remove trailing single quote?
-    if #str > 0 and string.sub(str, #str, #str) == "'" then
-        str = str:sub(1, #str - 1); -- Remove the last character
-    end
+    str = string.gsub(str, "\n", "") -- Trim trailing white space (https://www.lua.org/manual/5.4/manual.html#6.4.1)
+    str = string.gsub(str, "\\n", "\n") -- Replace escaped newlines with actual newlines
 
     return str;
 end
