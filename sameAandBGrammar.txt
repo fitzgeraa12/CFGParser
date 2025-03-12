@@ -1,0 +1,9 @@
+X, S, Y, Z, A, B
+a, b, e
+X -> YB | ZA | XX | AB | BA
+S -> YB | ZA | XX | AB | BA | e
+Y -> AX
+Z -> BX
+A -> a
+B -> b
+S

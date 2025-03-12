@@ -1,0 +1,8 @@
+X, S, Y, A, B
+a, b, e
+X -> YB | AB
+S -> YB | AB | e
+Y -> AX
+A -> a
+B -> b
+S
