@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "dyn_string.h" // This is not an 3rd-party lib
+#include "direct.h"
 
 // Quick exit program
 void panic(const char* panic_msg) {
@@ -51,17 +52,13 @@ dyn_string* read_file_contents(const char* file_path) {
     return file_contents;
 }
 
+// https://stackoverflow.com/questions/298510/how-to-get-the-current-directory-in-a-c-program
 int main(int argc, char** argv) {
-    const char* exe_path = shift_args(&argc, &argv);
+    shift_args(&argc, &argv);
 
-    // Get working directory
-    // https://www.ibm.com/docs/en/zos/2.4.0?topic=programs-strrchr-find-last-occurrence-character-in-string
-    char* last_bslash = strrchr(exe_path, '\\');
-    *(++last_bslash) = '\0'; // Early termination
-    const char* working_dir = exe_path;
-
-#ifdef _WIN32
-    const char* luau_interpreter = "bin\\luau-windows.exe";
+    char working_dir[FILENAME_MAX];
+    _getcwd(working_dir, FILENAME_MAX);
+    log_msg(working_dir);
 
     if (argc > 0 && strcmp(argv[0], "-analyze") == 0) {
         shift_args(&argc, &argv);
@@ -70,7 +67,7 @@ int main(int argc, char** argv) {
         dyn_string* analyze_cmd = dyn_string_create(working_dir);
         if (!analyze_cmd) panic("Failed to allocate memory for analyze_cmd.");
 
-        dyn_string_append(analyze_cmd, "bin\\luau-analyze.exe");
+        dyn_string_append(analyze_cmd, "\\bin\\luau-analyze.exe");
         dyn_string_append(analyze_cmd, " ");
         dyn_string_append(analyze_cmd, "cfg_parser.luau");
         if (system(analyze_cmd->raw) != 0) panic("Failed to run analyze command."); // Run analyze command
@@ -78,24 +75,20 @@ int main(int argc, char** argv) {
         log_msg("Ran luau analyzer.");
         dyn_string_free(analyze_cmd);
     }
-#elif __APPLE__
-    const char* luau_interpreter = "bin/luau-macos";
-#elif __linux__
-    const char* luau_interpreter = "bin/luau-linux";
-#else
-    panic("Unsupported operating system.");
-#endif
+
 
     // Run code
     dyn_string* run_cmd = dyn_string_create(working_dir);
     if (!run_cmd) panic("Failed to allocate memory for run_cmd.");
 
-    dyn_string_append(run_cmd, luau_interpreter);
+    dyn_string_append(run_cmd, "\\bin\\luau-windows.exe");
     dyn_string_append(run_cmd, " ");
     dyn_string_append(run_cmd, working_dir);
-    dyn_string_append(run_cmd, "cfg_parser.luau");
+    dyn_string_append(run_cmd, "\\cfg_parser.luau");
     dyn_string_append(run_cmd, " ");
     dyn_string_append(run_cmd, "-a");
+
+    log_msg(run_cmd->raw);
 
     // Appends file contents as args to luau code (Luau has very limited I/O)
     for (int i = 0; i < argc; i++) {
